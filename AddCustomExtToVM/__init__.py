@@ -3,13 +3,12 @@ import logging
 import azure.functions as func
 # Import the needed credential and management objects from the libraries.
 from azure.identity import DefaultAzureCredential
-from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.compute import ComputeManagementClient
 import os
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+    # Derived from https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/custom-script-windows#using-multiple-scripts
 
     credentials = DefaultAzureCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
