@@ -4,6 +4,7 @@ import azure.functions as func
 # Import the needed credential and management objects from the libraries.
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.compute.models import VirtualMachineExtension
 import os
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -17,9 +18,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     compute_client = ComputeManagementClient(credentials, subscription_id)
 
     #Exchange for hardcoded variable, received from GET Parameters/Query or POST body, or even as a Environmental variable from App Settings
-    resource_group_name = '<resource-group>'        
-    vm_name = '<vm-name>'
-    vm_extension_name = '<vm-script-name>'
+    resource_group_name = os.environ["RESOURCE_GROUP"]       
+    vm_name = os.environ["VM_NAME"]    
+    vm_extension_name = os.environ["VM_EXT_NAME"]  
 
     #Parameters found here: https://docs.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2018_10_01.models.virtualmachineextension?view=azure-python
     # VirtualMachineExtension(*, 
@@ -34,20 +35,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     #     protected_settings: Optional[Any] = None, 
     #     instance_view: Optional[azure.mgmt.compute.v2018_10_01.models._models_py3.VirtualMachineExtensionInstanceView] = None, 
     #     **kwargs)
-    extension_parameters = {
-        'location':'eastus',
-        'publisher': 'Microsoft.Compute',
-        'virtual_machine_extension_type': 'CustomScriptExtension',
+    extension_parameters = VirtualMachineExtension(
+        location='eastus',
+        publisher= 'Microsoft.Compute',
+        virtual_machine_extension_type= 'CustomScriptExtension',
         #Types found here: https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/azure-arc/servers/manage-vm-extensions.md
-        'type_handler_version': '1.10',
-        'auto_upgrade_minor_version': True,
-        'settings':{
+        type_handler_version= '1.10',
+        auto_upgrade_minor_version= True,
+        settings = {
             'fileUris': ["https://xxxxxxx.blob.core.windows.net/buildServer1/1_Add_Tools.ps1"]
         },
-        'protected_settings':{
+        protected_settings = {
             'commandToExecute':"powershell -ExecutionPolicy Unrestricted -File 1_Add_Tools.ps1"
         }
-    }
+    )
+        
 
     #Method found here: https://docs.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2018_10_01.operations.virtualmachineextensionsoperations?view=azure-python#azure-mgmt-compute-v2018-10-01-operations-virtualmachineextensionsoperations-begin-create-or-update
     # begin_create_or_update(

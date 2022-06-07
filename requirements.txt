@@ -3,7 +3,5 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions
-azure-mgmt-resource
 azure-mgmt-compute
-azure-mgmt-network
 azure-identity
