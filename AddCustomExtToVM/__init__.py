@@ -2,17 +2,17 @@ import logging
 
 import azure.functions as func
 # Import the needed credential and management objects from the libraries.
-from azure.identity import DefaultAzureCredential
+from azure.identity import EnvironmentCredential
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.compute.models import VirtualMachineExtension
 import os
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    logging.info("Python HTTP trigger function processed a request.")
 
     # Derived from https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/custom-script-windows#using-multiple-scripts
 
-    credentials = DefaultAzureCredential()
+    credentials = EnvironmentCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
 
     compute_client = ComputeManagementClient(credentials, subscription_id)
@@ -36,20 +36,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     #     instance_view: Optional[azure.mgmt.compute.v2018_10_01.models._models_py3.VirtualMachineExtensionInstanceView] = None, 
     #     **kwargs)
     extension_parameters = VirtualMachineExtension(
-        location='eastus',
-        publisher= 'Microsoft.Compute',
-        virtual_machine_extension_type= 'CustomScriptExtension',
+        location="eastus",
+        publisher= "Microsoft.Azure.Extensions",
+        type_properties_type= "CustomScriptExtension", #Seems like a typo, but is required
         #Types found here: https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/azure-arc/servers/manage-vm-extensions.md
-        type_handler_version= '1.10',
+        type_handler_version= "2.0",
         auto_upgrade_minor_version= True,
         settings = {
-            'fileUris': ["https://xxxxxxx.blob.core.windows.net/buildServer1/1_Add_Tools.ps1"]
+            "fileUris": ["https://xxxxxxx.blob.core.windows.net/buildServer1/1_Add_Tools.ps1"]
         },
         protected_settings = {
-            'commandToExecute':"powershell -ExecutionPolicy Unrestricted -File 1_Add_Tools.ps1"
+            "commandToExecute":"powershell -ExecutionPolicy Unrestricted -File 1_Add_Tools.ps1"
         }
-    )
-        
+    ) 
 
     #Method found here: https://docs.microsoft.com/en-us/python/api/azure-mgmt-compute/azure.mgmt.compute.v2018_10_01.operations.virtualmachineextensionsoperations?view=azure-python#azure-mgmt-compute-v2018-10-01-operations-virtualmachineextensionsoperations-begin-create-or-update
     # begin_create_or_update(
@@ -60,8 +59,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     #     **kwargs: Any) -> LROPoller[_models.VirtualMachineExtension]
     result = compute_client.virtual_machine_extensions.begin_create_or_update(resource_group_name, vm_name, vm_extension_name, extension_parameters).result()
 
-    logging.info(f'Extension {vm_extension_name} created for {vm_name}.')
-    logging.info(f'{format(result)}')
+    logging.info(f"Extension {vm_extension_name} created for {vm_name}.")
+    logging.info(f"{format(result)}")
 
     return func.HttpResponse(
             f"This HTTP triggered function executed successfully.\n{format(result)}",
