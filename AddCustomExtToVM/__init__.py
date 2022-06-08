@@ -37,7 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     #     **kwargs)
     extension_parameters = VirtualMachineExtension(
         location="eastus",
-        publisher= "Microsoft.Azure.Extensions",
+        publisher= "Microsoft.Compute",
         type_properties_type= "CustomScriptExtension", #Seems like a typo, but is required
         #Types found here: https://github.com/MicrosoftDocs/azure-docs/blob/main/articles/azure-arc/servers/manage-vm-extensions.md
         type_handler_version= "2.0",
